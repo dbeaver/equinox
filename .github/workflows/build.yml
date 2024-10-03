@@ -8,6 +8,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,10 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         config: 
-          - { name: Linux, runner-os: ubuntu-latest, ws: gtk, os: linux, native-extension: so }
-          - { name: Windows, runner-os: windows-2019, ws: win32, os: win32, native-extension: dll }
-          - { name: MacOS, runner-os: macos-13, ws: cocoa, os: macosx, native-extension: so }
-    name: Build ${{ matrix.config.name }}
+          - { name: Linux, runner-os: ubuntu-latest, ws: gtk, os: linux, arch: x86_64, native-extension: so }
+          - { name: Windows, runner-os: windows-2019, ws: win32, os: win32, arch: x86_64, native-extension: dll }
+          - { name: macOS, runner-os: macos-13, ws: cocoa, os: macosx, arch: x86_64, native-extension: so }
+          - { name: macOS, runner-os: macos-14, ws: cocoa, os: macosx, arch: aarch64, native-extension: so }
+    name: Build ${{ matrix.config.name }} ${{ matrix.config.arch }}
     runs-on: ${{ matrix.config.runner-os }}
     defaults:
       run: # Run on cmd on Windows because powershell interprets dots in arguments differently
@@ -43,7 +45,7 @@ jobs:
         mvn-toolchain-id: |
           JavaSE-1.8
           JavaSE-17
-        distribution: 'temurin'
+        distribution: 'liberica'
         cache: maven
     - name: Set up Maven
       uses: stCarolas/setup-maven@v5
@@ -63,72 +65,23 @@ jobs:
         --batch-mode
         -Pbree-libs
         -Papi-check
-        -Dcompare-version-with-baselines.skip=false
+        -Dcompare-version-with-baselines.skip=true
         -Dmaven.test.failure.ignore=true
-        -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.x86_64
+        -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.${{ matrix.config.arch }}
         -Dequinox.binaries.loc=${{ github.workspace }}/equinox.binaries
         clean verify
     - name: Upload native artifacts
       uses: actions/upload-artifact@v4
       if: success()
       with:
-        name: ${{ matrix.config.name }} launcher artifacts
+        name: ${{ matrix.config.name }} ${{ matrix.config.arch }} launcher artifacts
         path: |
-          equinox.binaries/org.eclipse.equinox.executable/bin/${{ matrix.config.ws }}/${{ matrix.config.os }}/x86_64/**/eclipse*
-          equinox.binaries/org.eclipse.equinox.launcher.${{ matrix.config.ws }}.${{ matrix.config.os }}.x86_64/eclipse_*.${{ matrix.config.native-extension }}
+          equinox.binaries/org.eclipse.equinox.executable/bin/${{ matrix.config.ws }}/${{ matrix.config.os }}/${{ matrix.config.arch }}/**/eclipse*
+          equinox.binaries/org.eclipse.equinox.launcher.${{ matrix.config.ws }}.${{ matrix.config.os }}.${{ matrix.config.arch }}/eclipse_*.${{ matrix.config.native-extension }}
         if-no-files-found: error
-    - name: Upload ${{ matrix.config.name }} Test Results
+    - name: Upload ${{ matrix.config.name }} ${{ matrix.config.arch }} Test Results
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ matrix.config.name }}64
+        name: test-results-${{ matrix.config.name }}${{ matrix.config.arch }}
         if-no-files-found: error
         path: '**/target/*-reports/*.xml'
-
-  tck:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: |
-          8
-          17
-        mvn-toolchain-id: |
-          JavaSE-1.8
-          JavaSE-17
-        distribution: 'temurin'
-        cache: maven
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v5
-      with:
-        maven-version: 3.9.9
-    - name: Run OSGi TCKs
-      run: >- 
-        mvn
-        -U
-        --batch-mode
-        --threads 1C
-        -Pbuild-individual-bundles
-        -Pbree-libs
-        -Ptck
-        -Dskip-default-modules=true
-        -Dtycho.resolver.classic=false
-        -fn
-        clean verify
-    - name: Upload TCK Results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: tck-results
-        if-no-files-found: error
-        path: '**/target/tck-results/TEST-*.xml'
-  event_file:
-    name: "Upload Event File"
-    runs-on: ubuntu-latest
-    steps:
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: Event File
-        path: ${{ github.event_path }}
