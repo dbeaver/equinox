@@ -155,7 +155,7 @@ extern void * findSymbol( void * handle, _TCHAR * symbol );
 extern _TCHAR* checkPath( _TCHAR* path, _TCHAR* programDir, int reverseOrder );
 
 /* expands environment-variable strings and replaces them with the values defined for the current user */
-extern _TCHAR* expandPath( _TCHAR* path );
+extern _TCHAR* expandPath(_TCHAR* path);
 
 extern _TCHAR * lastDirSeparator(_TCHAR* str);
 

@@ -256,7 +256,7 @@ static _TCHAR*  defaultAction = NULL;			/* default action for non '-' command li
 static _TCHAR*  iniFile       = NULL;			/* the launcher.ini file set if  --launcher.ini was specified */
 static _TCHAR*  gtkVersionString = NULL;        /* GTK+ version specified by --launcher.GTK_version */
 static _TCHAR*  protectMode   = NULL;			/* Process protectMode specified via -protect, to trigger the reading of eclipse.ini in the configuration (Mac specific currently) */
-static _TCHAR** additionalVmargsPath = NULL;    /* List of locations containing a file with extra arguments for the JVM */
+static _TCHAR** additionalVmargsPath = NULL;    /* List of locations of files with extra vmargs that have higher priority over other vmargs */
 
 /* variables for ee options */
 static _TCHAR* eeExecutable = NULL;
@@ -283,7 +283,7 @@ typedef struct
 #define ADJUST_PATH		4  	/* value is a path, do processing on relative paths to try and make them absolute */
 #define VALUE_IS_LIST	8  	/* value is a pointer to a tokenized _TCHAR* string for EE files, or a _TCHAR** list for the command line */
 #define INVERT_FLAG    16   /* invert the meaning of a flag, i.e. reset it */
-#define EXPAND_PATH	   32  	/* value is a path, expand environment variables, if present */
+#define EXPAND_PATH	   32  	/* value is a path, expands patterns like %name% with environment-variable strings */
 
 static Option options[] = {
     { CONSOLE,		&needConsole,	VALUE_IS_FLAG,	0 },
@@ -1009,8 +1009,9 @@ static _TCHAR** getAdditionalVMArgs() {
     _TCHAR** argv = NULL;
 
     for (_TCHAR** path = additionalVmargsPath; path; path++) {
-        if (readConfigFile(*path, &argc, &argv) == 0)
+        if (readConfigFile(*path, &argc, &argv) == 0) {
             break;
+        }
     }
 
     return argv;
