@@ -43,7 +43,7 @@ jobs:
           8
           17
         mvn-toolchain-id: |
-          JavaSE-8
+          JavaSE-1.8
           JavaSE-17
         distribution: 'liberica'
         cache: maven
