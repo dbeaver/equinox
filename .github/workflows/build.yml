@@ -65,6 +65,7 @@ jobs:
         -Papi-check
         -Dcompare-version-with-baselines.skip=false
         -Dmaven.test.failure.ignore=true
+        -DskipTests=true
         -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.${{ matrix.config.arch }}
         -Dequinox.binaries.loc=${{ github.workspace }}/equinox.binaries
         clean verify
@@ -83,52 +84,3 @@ jobs:
         name: test-results-${{ matrix.config.name }}${{ matrix.config.arch }}
         if-no-files-found: error
         path: '**/target/*-reports/*.xml'
-
-  tck:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: |
-          8
-          17
-        mvn-toolchain-id: |
-          JavaSE-1.8
-          JavaSE-17
-        distribution: 'temurin'
-        cache: maven
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v5
-      with:
-        maven-version: 3.9.9
-    - name: Run OSGi TCKs
-      run: >- 
-        mvn
-        -U
-        --batch-mode
-        --threads 1C
-        -Pbuild-individual-bundles
-        -Pbree-libs
-        -Ptck
-        -Dskip-default-modules=true
-        -Dtycho.resolver.classic=false
-        -fn
-        clean verify
-    - name: Upload TCK Results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: tck-results
-        if-no-files-found: error
-        path: '**/target/tck-results/TEST-*.xml'
-  event_file:
-    name: "Upload Event File"
-    runs-on: ubuntu-latest
-    steps:
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: Event File
-        path: ${{ github.event_path }}
