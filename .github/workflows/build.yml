@@ -40,10 +40,12 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: |
+          8
           17
         mvn-toolchain-id: |
+          JavaSE-8
           JavaSE-17
-        distribution: 'temurin'
+        distribution: 'liberica'
         cache: maven
     - name: Set up Maven
       uses: stCarolas/setup-maven@v5
@@ -65,7 +67,6 @@ jobs:
         -Papi-check
         -Dcompare-version-with-baselines.skip=false
         -Dmaven.test.failure.ignore=true
-        -DskipTests=true
         -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.${{ matrix.config.arch }}
         -Dequinox.binaries.loc=${{ github.workspace }}/equinox.binaries
         clean verify
