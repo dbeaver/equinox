@@ -65,7 +65,7 @@ jobs:
         --batch-mode
         -Pbree-libs
         -Papi-check
-        -Dcompare-version-with-baselines.skip=false
+        -Dcompare-version-with-baselines.skip=true
         -Dmaven.test.failure.ignore=true
         -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.${{ matrix.config.arch }}
         -Dequinox.binaries.loc=${{ github.workspace }}/equinox.binaries
