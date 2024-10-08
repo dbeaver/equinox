@@ -16,9 +16,10 @@ jobs:
       fail-fast: false
       matrix:
         config: 
-          - { name: Linux, runner-os: ubuntu-latest, ws: gtk, os: linux, native-extension: so }
-          - { name: Windows, runner-os: windows-2019, ws: win32, os: win32, native-extension: dll }
-          - { name: MacOS, runner-os: macos-13, ws: cocoa, os: macosx, native-extension: so }
+          - { name: Linux x86, runner-os: ubuntu-latest, ws: gtk, os: linux, arch: x86_64, native-extension: so }
+          - { name: Windows x86, runner-os: windows-2019, ws: win32, os: win32, arch: x86_64, native-extension: dll }
+          - { name: macOS x86, runner-os: macos-13, ws: cocoa, os: macosx, arch: x86_64, native-extension: so }
+          - { name: macOS ARM, runner-os: macos-14, ws: cocoa, os: macosx, arch: aarch64, native-extension: so }
     name: Build ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner-os }}
     defaults:
@@ -66,7 +67,7 @@ jobs:
         -Papi-check
         -Dcompare-version-with-baselines.skip=false
         -Dmaven.test.failure.ignore=true
-        -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.x86_64
+        -Dnative=${{ matrix.config.ws }}.${{ matrix.config.os }}.${{ matrix.config.arch }}
         -Dequinox.binaries.loc=${{ github.workspace }}/equinox.binaries
         clean verify
     - name: Upload native artifacts
@@ -75,13 +76,13 @@ jobs:
       with:
         name: ${{ matrix.config.name }} launcher artifacts
         path: |
-          equinox.binaries/org.eclipse.equinox.executable/bin/${{ matrix.config.ws }}/${{ matrix.config.os }}/x86_64/**/eclipse*
-          equinox.binaries/org.eclipse.equinox.launcher.${{ matrix.config.ws }}.${{ matrix.config.os }}.x86_64/eclipse_*.${{ matrix.config.native-extension }}
+          equinox.binaries/org.eclipse.equinox.executable/bin/${{ matrix.config.ws }}/${{ matrix.config.os }}/{{ matrix.config.arch }}/**/eclipse*
+          equinox.binaries/org.eclipse.equinox.launcher.${{ matrix.config.ws }}.${{ matrix.config.os }}.{{ matrix.config.arch }}/eclipse_*.${{ matrix.config.native-extension }}
         if-no-files-found: error
     - name: Upload ${{ matrix.config.name }} Test Results
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ matrix.config.name }}64
+        name: test-results-${{ matrix.config.name }}{{ matrix.config.arch }}
         if-no-files-found: error
         path: '**/target/*-reports/*.xml'
 
