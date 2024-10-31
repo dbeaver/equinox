@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         config: 
-          - { name: Linux, runner-os: ubuntu-latest, ws: gtk, os: linux, arch: x86_64, native-extension: so }
+          - { name: Linux, runner-os: ubuntu-20.04, ws: gtk, os: linux, arch: x86_64, native-extension: so }
           - { name: Windows, runner-os: windows-2019, ws: win32, os: win32, arch: x86_64, native-extension: dll }
           - { name: macOS, runner-os: macos-13, ws: cocoa, os: macosx, arch: x86_64, native-extension: so }
           - { name: macOS, runner-os: macos-14, ws: cocoa, os: macosx, arch: aarch64, native-extension: so }
