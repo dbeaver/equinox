@@ -48,7 +48,7 @@ jobs:
         distribution: 'liberica'
         cache: maven
     - name: Set up Maven
-      uses: stCarolas/setup-maven@v5
+      uses: dbeaver/setup-maven@v5
       with:
         maven-version: 3.9.9
     - name: Install GTK requirements
